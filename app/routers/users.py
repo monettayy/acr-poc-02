@@ -26,6 +26,14 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
             detail="Username already taken"
         )
     
+    # Check if role exists
+    db_role = crud.get_role(db, role_id=user.role_id)
+    if not db_role:
+        raise HTTPException(
+            status_code=400,
+            detail="Role not found"
+        )
+    
     return crud.create_user(db=db, user=user)
 
 

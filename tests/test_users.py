@@ -4,7 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.database import get_db, Base
-from app.models import User
+from app.models import User, Role
+from app import crud
 
 # Create test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -17,6 +18,8 @@ Base.metadata.create_all(bind=engine)
 def override_get_db():
     try:
         db = TestingSessionLocal()
+        # Create default roles for testing
+        crud.create_default_roles(db)
         yield db
     finally:
         db.close()
@@ -32,7 +35,8 @@ def sample_user_data():
         "email": "test@example.com",
         "username": "testuser",
         "full_name": "Test User",
-        "is_active": True
+        "is_active": True,
+        "role_id": 2  # User role (assuming Superuser=1, User=2)
     }
 
 
