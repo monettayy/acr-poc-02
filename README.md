@@ -9,6 +9,8 @@ A production-ready FastAPI backend starter template with PostgreSQL, SQLAlchemy,
 - **SQLAlchemy ORM** - Python SQL toolkit and Object-Relational Mapping
 - **Alembic** - Database migration tool for SQLAlchemy
 - **Docker & Docker Compose** - Containerized development environment
+- **Role-Based Access Control** - User roles with Superuser protection
+- **Password Hashing** - Secure password storage with bcrypt
 - **Pydantic** - Data validation using Python type annotations
 - **Black & Flake8** - Code formatting and linting
 - **Pytest** - Testing framework
@@ -192,11 +194,18 @@ The test suite includes:
 - `GET /health` - Returns application health status
 
 ### Users
-- `GET /users/` - Get all users (with pagination)
-- `POST /users/` - Create a new user
-- `GET /users/{user_id}` - Get a specific user
+- `GET /users/` - Get all users (with pagination and role info)
+- `POST /users/` - Create a new user (requires role_id)
+- `GET /users/{user_id}` - Get a specific user with role
 - `PUT /users/{user_id}` - Update a user
 - `DELETE /users/{user_id}` - Delete a user
+
+### Roles
+- `GET /roles/` - Get all roles (with pagination)
+- `POST /roles/` - Create a new role
+- `GET /roles/{role_id}` - Get a specific role
+- `PUT /roles/{role_id}` - Update a role (except Superuser)
+- `DELETE /roles/{role_id}` - Delete a role (except Superuser)
 
 ### Interactive Documentation
 - `GET /docs` - Swagger UI documentation
@@ -275,9 +284,72 @@ This project is open source and available under the [MIT License](LICENSE).
 - Review [SQLAlchemy documentation](https://docs.sqlalchemy.org/)
 - Check [Alembic documentation](https://alembic.sqlalchemy.org/)
 
+## 👥 Role Management
+
+### Default Roles
+The system automatically creates two default roles on startup:
+
+1. **Superuser** - Full system access (protected from deletion/modification)
+2. **User** - Standard user role
+
+### Default Superuser Account
+A default administrator account is created automatically:
+- **Username**: `admin`
+- **Email**: `admin@example.com`
+- **Password**: `admin123`
+- **Role**: Superuser
+
+⚠️ **Important**: Change the default password in production!
+
+### Role-Based Data Structure
+
+#### Users Table
+- `id` - Primary key
+- `email` - Unique email address
+- `username` - Unique username
+- `full_name` - Optional full name
+- `password_hash` - Hashed password (bcrypt)
+- `is_active` - Account status
+- `role_id` - Foreign key to roles table
+- `created_at` - Account creation timestamp
+- `updated_at` - Last update timestamp
+
+#### Roles Table
+- `id` - Primary key
+- `name` - Unique role name
+- `created_at` - Role creation timestamp
+- `updated_at` - Last update timestamp
+
+### Role Protection
+- **Superuser role** cannot be deleted or modified
+- **Superuser role** is automatically created on startup
+- All users must have a valid role assigned
+
+### Creating Users with Roles
+```json
+POST /users/
+{
+  "email": "user@example.com",
+  "username": "newuser",
+  "full_name": "New User",
+  "password": "securepassword",
+  "role_id": 2
+}
+```
+
+### Creating Custom Roles
+```json
+POST /roles/
+{
+  "name": "Manager"
+}
+```
+
 ## 🔄 Next Steps
 
-- Add authentication and authorization
+- Add JWT authentication
+- Implement role-based permissions
+- Add password reset functionality
 - Implement API rate limiting
 - Add request/response logging
 - Set up monitoring and health checks
