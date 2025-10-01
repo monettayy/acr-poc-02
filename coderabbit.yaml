@@ -1,0 +1,30 @@
+version: 1
+
+reviews:
+  auto_review:
+    enabled: true
+    incremental: true
+  max_comments: 15
+  allow_suggested_changes: true
+  auto_approve: false
+
+ignore_paths:
+  - alembic/versions/**
+  - migrations/**
+  - venv/**
+  - __pycache__/**
+  - "**/*.pyc"
+
+checks:
+  python:
+    lint: ruff
+    format: black
+    typing: mypy
+    security: bandit
+  database:
+    alembic:
+      enabled: true
+      dialect: postgresql
+  docs:
+    docstrings: true
+    readme: true
